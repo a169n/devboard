@@ -8,10 +8,15 @@ export function fail(
   res: Response,
   status: number,
   message: string,
-  details?: unknown,
-  code?: string,
+  options?: { code?: string; details?: unknown },
 ) {
-  return res
-    .status(status)
-    .json({ success: false, error: { ...(code !== undefined && { code }), message, ...(details !== undefined && { details }) } });
+  const { code, details } = options ?? {};
+  return res.status(status).json({
+    success: false,
+    error: {
+      ...(code !== undefined && { code }),
+      message,
+      ...(details !== undefined && { details }),
+    },
+  });
 }
