@@ -9,6 +9,8 @@
     "dev": "concurrently \"npm run dev -w @devboard/api\" \"npm run dev -w @devboard/web\"",
     "build": "npm run build -w @devboard/api && npm run build -w @devboard/web",
     "lint": "npm run lint -w @devboard/api && npm run lint -w @devboard/web",
+    "format": "npm run format -w @devboard/api && npm run format -w @devboard/web",
+    "format:check": "npm run format:check -w @devboard/api && npm run format:check -w @devboard/web",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "db:migrate": "npm run prisma:migrate -w @devboard/api",
@@ -16,6 +18,7 @@
     "db:seed": "npm run prisma:seed -w @devboard/api"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "prettier": "^3.8.3"
   }
 }
