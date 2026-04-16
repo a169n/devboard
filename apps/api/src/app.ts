@@ -19,9 +19,13 @@ app.use(cors({ origin: env.CORS_ORIGIN }));
 app.use(globalLimiter);
 app.use(express.json());
 
-app.get('/health', async (_req, res) => {
-  const dbOk = await prisma.$queryRaw`SELECT 1`.then(() => true).catch(() => false);
-  return ok(res, { status: 'ok', db: dbOk ? 'ok' : 'error', uptime: process.uptime() });
+app.get('/health', async (_req, res, next) => {
+  try {
+    const dbOk = await prisma.$queryRaw`SELECT 1`.then(() => true).catch(() => false);
+    return ok(res, { status: 'ok', db: dbOk ? 'ok' : 'error', uptime: process.uptime() });
+  } catch (err) {
+    next(err);
+  }
 });
 app.use('/api/auth', authLimiter, authRouter);
 app.use('/api/boards', requireAuth, boardRouter);
