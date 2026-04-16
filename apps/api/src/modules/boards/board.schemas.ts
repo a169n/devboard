@@ -1,0 +1,9 @@
+import { z } from 'zod';
+
+export const createBoardSchema = z.object({
+  title: z.string().min(1).max(120),
+});
+
+export const updateBoardSchema = z.object({
+  title: z.string().min(1).max(120),
+});
