@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,7 +26,6 @@ type LoginValues = z.infer<typeof loginSchema>;
 export function LoginPage() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
-  const [error, setError] = useState('');
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
@@ -35,12 +34,12 @@ export function LoginPage() {
   if (user) return <Navigate to="/" replace />;
 
   const onSubmit = async (values: LoginValues) => {
-    setError('');
     try {
       await login(values.email, values.password);
+      toast.success('Welcome back!');
       navigate('/', { replace: true });
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Login failed. Check your email and password.'));
+      toast.error(getApiErrorMessage(err, 'Login failed. Check your email and password.'));
     }
   };
 
@@ -83,7 +82,6 @@ export function LoginPage() {
                 </FormItem>
               )}
             />
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
             <Button className="w-full" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? 'Logging in...' : 'Login'}
             </Button>

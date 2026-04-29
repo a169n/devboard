@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,7 +27,6 @@ type RegisterValues = z.infer<typeof registerSchema>;
 export function RegisterPage() {
   const { register, user } = useAuth();
   const navigate = useNavigate();
-  const [error, setError] = useState('');
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: { name: '', email: '', password: '' },
@@ -36,12 +35,12 @@ export function RegisterPage() {
   if (user) return <Navigate to="/" replace />;
 
   const onSubmit = async (values: RegisterValues) => {
-    setError('');
     try {
       await register(values.name, values.email, values.password);
+      toast.success('Account created! Welcome to DevBoard.');
       navigate('/', { replace: true });
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Registration failed. Try a different email.'));
+      toast.error(getApiErrorMessage(err, 'Registration failed. Try a different email.'));
     }
   };
 
@@ -97,7 +96,6 @@ export function RegisterPage() {
                 </FormItem>
               )}
             />
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
             <Button className="w-full" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? 'Creating account...' : 'Create account'}
             </Button>
