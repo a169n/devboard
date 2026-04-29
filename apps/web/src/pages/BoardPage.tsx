@@ -1,8 +1,11 @@
 import {
   closestCenter,
   DndContext,
+  DragOverlay,
   type DragEndEvent,
+  type DragStartEvent,
   PointerSensor,
+  pointerWithin,
   useDroppable,
   useSensor,
   useSensors,
@@ -11,7 +14,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, GripVertical, Plus, RefreshCcw } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useParams } from 'react-router-dom';
@@ -105,11 +108,21 @@ function SortableCard({
     transition,
   };
 
+  if (isDragging) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="h-16 rounded-lg border-2 border-dashed border-ring/50 bg-muted/30"
+      />
+    );
+  }
+
   return (
     <article
       ref={setNodeRef}
       style={style}
-      className={`rounded-lg border bg-card p-3 shadow-sm ${isDragging ? 'opacity-70 ring-2 ring-ring' : ''}`}
+      className="rounded-lg border bg-card p-3 shadow-sm"
     >
       <div className="flex items-start gap-2">
         <button
@@ -340,6 +353,7 @@ export function BoardPage() {
   const { boardId = '' } = useParams();
   const queryClient = useQueryClient();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const [activeCard, setActiveCard] = useState<CardType | null>(null);
   const [createColumnOpen, setCreateColumnOpen] = useState(false);
   const [renameColumn, setRenameColumn] = useState<Column | null>(null);
   const [deleteColumnTarget, setDeleteColumnTarget] = useState<Column | null>(null);
@@ -425,7 +439,22 @@ export function BoardPage() {
     return map;
   }, [boardQuery.data]);
 
+  const collisionDetection = useCallback(
+    (args: Parameters<typeof pointerWithin>[0]) => {
+      const pointerHits = pointerWithin(args);
+      if (pointerHits.length > 0) return pointerHits;
+      return closestCenter(args);
+    },
+    [],
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const card = event.active.data.current?.card as CardType | undefined;
+    if (card) setActiveCard(card);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveCard(null);
     const activeId = String(event.active.id);
     const overId = event.over?.id ? String(event.over.id) : null;
     if (!overId || !boardQuery.data) return;
@@ -517,7 +546,12 @@ export function BoardPage() {
           </Button>
         </section>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={collisionDetection}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
           <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
             {boardQuery.data.columns.map((column) => (
               <DroppableColumn key={column.id} column={column}>
@@ -573,6 +607,30 @@ export function BoardPage() {
               </DroppableColumn>
             ))}
           </div>
+          <DragOverlay dropAnimation={null}>
+            {activeCard ? (
+              <article className="rounded-lg border bg-card p-3 shadow-lg ring-2 ring-ring opacity-95 rotate-1">
+                <div className="flex items-start gap-2">
+                  <div className="mt-0.5 rounded p-1 text-muted-foreground">
+                    <GripVertical className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="break-words font-medium leading-snug">{activeCard.title}</h4>
+                      <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${priorityColor[activeCard.priority]}`}>
+                        {activeCard.priority}
+                      </span>
+                    </div>
+                    {activeCard.description && (
+                      <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                        {activeCard.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ) : null}
+          </DragOverlay>
         </DndContext>
       )}
 
