@@ -119,14 +119,10 @@ function SortableCard({
   }
 
   return (
-    <article
-      ref={setNodeRef}
-      style={style}
-      className="rounded-lg border bg-card p-3 shadow-sm"
-    >
+    <article ref={setNodeRef} style={style} className="task-card">
       <div className="flex items-start gap-2">
         <button
-          className="mt-0.5 rounded p-1 text-muted-foreground hover:bg-muted"
+          className="mt-0.5 rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           aria-label={`Drag ${card.title}`}
           {...attributes}
           {...listeners}
@@ -171,10 +167,7 @@ function DroppableColumn({ column, children }: { column: Column; children: React
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
   return (
-    <section
-      ref={setNodeRef}
-      className={`flex h-full w-72 min-w-72 shrink-0 flex-col rounded-lg border bg-muted/70 p-3 transition-colors ${isOver ? 'border-accent bg-accent/10' : ''}`}
-    >
+    <section ref={setNodeRef} className={`kanban-column ${isOver ? 'kanban-column-over' : ''}`}>
       {children}
     </section>
   );
@@ -439,14 +432,11 @@ export function BoardPage() {
     return map;
   }, [boardQuery.data]);
 
-  const collisionDetection = useCallback(
-    (args: Parameters<typeof pointerWithin>[0]) => {
-      const pointerHits = pointerWithin(args);
-      if (pointerHits.length > 0) return pointerHits;
-      return closestCenter(args);
-    },
-    [],
-  );
+  const collisionDetection = useCallback((args: Parameters<typeof pointerWithin>[0]) => {
+    const pointerHits = pointerWithin(args);
+    if (pointerHits.length > 0) return pointerHits;
+    return closestCenter(args);
+  }, []);
 
   const handleDragStart = (event: DragStartEvent) => {
     const card = event.active.data.current?.card as CardType | undefined;
@@ -481,12 +471,18 @@ export function BoardPage() {
 
   if (boardQuery.isLoading) {
     return (
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Skeleton key={index} className="h-96" />
-          ))}
+      <main className="page-shell px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-7xl">
+          <Skeleton className="motion-enter h-8 w-48" />
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Skeleton
+                key={index}
+                className="motion-enter h-96"
+                style={{ animationDelay: `${index * 45}ms` }}
+              />
+            ))}
+          </div>
         </div>
       </main>
     );
@@ -516,21 +512,21 @@ export function BoardPage() {
   }
 
   return (
-    <main className="flex h-[calc(100vh-4rem)] flex-col overflow-hidden px-4 pt-8 sm:px-6">
-      <div className="mx-auto mb-4 w-full max-w-7xl">
+    <main className="page-shell flex h-[calc(100vh-4rem)] flex-col overflow-hidden px-4 pt-8 sm:px-6">
+      <div className="motion-enter mx-auto mb-4 w-full max-w-7xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-          <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2">
-            <Link to="/">
-              <ArrowLeft className="h-4 w-4" />
-              Back to boards
-            </Link>
-          </Button>
-          <h1 className="text-3xl font-semibold tracking-tight">{boardQuery.data.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Drag cards between columns. Changes are saved to this board.
-          </p>
-        </div>
+            <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2">
+              <Link to="/">
+                <ArrowLeft className="h-4 w-4" />
+                Back to boards
+              </Link>
+            </Button>
+            <h1 className="text-3xl font-semibold tracking-tight">{boardQuery.data.title}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Drag cards between columns. Changes are saved to this board.
+            </p>
+          </div>
           <Button onClick={() => setCreateColumnOpen(true)}>
             <Plus className="h-4 w-4" />
             New column
@@ -539,7 +535,7 @@ export function BoardPage() {
       </div>
 
       {boardQuery.data.columns.length === 0 ? (
-        <section className="mx-auto w-full max-w-7xl rounded-lg border bg-card p-8 text-center">
+        <section className="interactive-card motion-enter mx-auto w-full max-w-7xl p-8 text-center">
           <h2 className="text-lg font-semibold">No columns yet</h2>
           <p className="mt-1 text-sm text-muted-foreground">Add a column to start placing cards.</p>
           <Button className="mt-5" onClick={() => setCreateColumnOpen(true)}>
@@ -548,93 +544,101 @@ export function BoardPage() {
           </Button>
         </section>
       ) : (
-        <div className="min-h-0 flex-1">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={collisionDetection}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="flex h-full gap-4 overflow-x-auto pb-4 [-webkit-overflow-scrolling:touch]">
-            {boardQuery.data.columns.map((column) => (
-              <DroppableColumn key={column.id} column={column}>
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="truncate font-semibold">{column.title}</h3>
-                    <p className="text-xs text-muted-foreground">{column.cards.length} cards</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => setRenameColumn(column)}>
-                      Rename
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive"
-                      onClick={() => setDeleteColumnTarget(column)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-
-                <SortableContext
-                  items={column.cards.map((card) => card.id)}
-                  strategy={verticalListSortingStrategy}
+        <div className="mx-auto min-h-0 w-full max-w-7xl flex-1">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={collisionDetection}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="flex h-full gap-4 overflow-x-auto pb-4 [-webkit-overflow-scrolling:touch]">
+              {boardQuery.data.columns.map((column, index) => (
+                <div
+                  key={column.id}
+                  className="motion-enter h-full"
+                  style={{ animationDelay: `${index * 45}ms` }}
                 >
-                  <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-0.5">
-                    {column.cards.length === 0 && (
-                      <div className="flex min-h-28 items-center justify-center rounded-md border border-dashed bg-background/70 p-4 text-center text-sm text-muted-foreground">
-                        Drop cards here or add a new one.
+                  <DroppableColumn column={column}>
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate font-semibold">{column.title}</h3>
+                        <p className="text-xs text-muted-foreground">{column.cards.length} cards</p>
                       </div>
-                    )}
-                    {column.cards.map((card) => (
-                      <SortableCard
-                        key={card.id}
-                        card={card}
-                        onDelete={setDeleteCardTarget}
-                        onEdit={setEditCard}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-
-                <Button
-                  variant="outline"
-                  className="mt-3 w-full bg-background"
-                  onClick={() => setCardColumnId(column.id)}
-                >
-                  <Plus className="h-4 w-4" />
-                  Add card
-                </Button>
-              </DroppableColumn>
-            ))}
-          </div>
-          <DragOverlay dropAnimation={null}>
-            {activeCard ? (
-              <article className="rounded-lg border bg-card p-3 shadow-lg ring-2 ring-ring opacity-95 rotate-1">
-                <div className="flex items-start gap-2">
-                  <div className="mt-0.5 rounded p-1 text-muted-foreground">
-                    <GripVertical className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <h4 className="break-words font-medium leading-snug">{activeCard.title}</h4>
-                      <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${priorityColor[activeCard.priority]}`}>
-                        {activeCard.priority}
-                      </span>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => setRenameColumn(column)}>
+                          Rename
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive"
+                          onClick={() => setDeleteColumnTarget(column)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </div>
-                    {activeCard.description && (
-                      <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                        {activeCard.description}
-                      </p>
-                    )}
-                  </div>
+
+                    <SortableContext
+                      items={column.cards.map((card) => card.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-md pr-0.5">
+                        {column.cards.length === 0 && (
+                          <div className="flex min-h-28 items-center justify-center rounded-md border border-dashed bg-background/70 p-4 text-center text-sm text-muted-foreground transition-colors dark:bg-muted/40">
+                            Drop cards here or add a new one.
+                          </div>
+                        )}
+                        {column.cards.map((card) => (
+                          <SortableCard
+                            key={card.id}
+                            card={card}
+                            onDelete={setDeleteCardTarget}
+                            onEdit={setEditCard}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+
+                    <Button
+                      variant="outline"
+                      className="mt-3 w-full"
+                      onClick={() => setCardColumnId(column.id)}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add card
+                    </Button>
+                  </DroppableColumn>
                 </div>
-              </article>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+              ))}
+            </div>
+            <DragOverlay dropAnimation={null}>
+              {activeCard ? (
+                <article className="rounded-lg border bg-card p-3 shadow-lg ring-2 ring-ring opacity-95 rotate-1">
+                  <div className="flex items-start gap-2">
+                    <div className="mt-0.5 rounded p-1 text-muted-foreground">
+                      <GripVertical className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="break-words font-medium leading-snug">{activeCard.title}</h4>
+                        <span
+                          className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${priorityColor[activeCard.priority]}`}
+                        >
+                          {activeCard.priority}
+                        </span>
+                      </div>
+                      {activeCard.description && (
+                        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                          {activeCard.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </div>
       )}
 

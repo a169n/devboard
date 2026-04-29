@@ -140,86 +140,93 @@ export function DashboardPage() {
   });
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-medium text-accent">Workspace</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Your boards</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Private Kanban boards owned by your account.
-          </p>
-        </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" />
-          New board
-        </Button>
-      </div>
-
-      {boardsQuery.isLoading && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <Skeleton key={index} className="h-36" />
-          ))}
-        </div>
-      )}
-
-      {boardsQuery.isError && (
-        <Alert className="border-destructive/40">
-          <AlertTitle>Could not load boards</AlertTitle>
-          <AlertDescription className="mb-4">
-            Refresh the list or sign in again if your session expired.
-          </AlertDescription>
-          <Button variant="outline" size="sm" onClick={() => void boardsQuery.refetch()}>
-            <RefreshCcw className="h-4 w-4" />
-            Retry
-          </Button>
-        </Alert>
-      )}
-
-      {!boardsQuery.isLoading && !boardsQuery.isError && boardsQuery.data?.length === 0 && (
-        <section className="rounded-lg border bg-card p-8 text-center">
-          <h2 className="text-lg font-semibold">No boards yet</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Create your first board to start organizing cards.
-          </p>
-          <Button className="mt-5" onClick={() => setCreateOpen(true)}>
+    <main className="page-shell px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <div className="motion-enter mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-accent">Workspace</p>
+            <h1 className="text-3xl font-semibold tracking-tight">Your boards</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Private Kanban boards owned by your account.
+            </p>
+          </div>
+          <Button onClick={() => setCreateOpen(true)}>
             <Plus className="h-4 w-4" />
             New board
           </Button>
-        </section>
-      )}
-
-      {!!boardsQuery.data?.length && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {boardsQuery.data.map((board) => (
-            <article
-              key={board.id}
-              className="rounded-lg border bg-card p-4 shadow-sm transition-colors hover:border-accent/60"
-            >
-              <Link
-                to={`/boards/${board.id}`}
-                className="block text-lg font-semibold hover:underline"
-              >
-                {board.title}
-              </Link>
-              <p className="mt-1 text-sm text-muted-foreground">{board._count.columns} columns</p>
-              <div className="mt-5 flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setRenameBoard(board)}>
-                  Rename
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive"
-                  onClick={() => setDeleteBoardTarget(board)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </article>
-          ))}
         </div>
-      )}
+
+        {boardsQuery.isLoading && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Skeleton
+                key={index}
+                className="motion-enter h-36"
+                style={{ animationDelay: `${index * 45}ms` }}
+              />
+            ))}
+          </div>
+        )}
+
+        {boardsQuery.isError && (
+          <Alert className="border-destructive/40">
+            <AlertTitle>Could not load boards</AlertTitle>
+            <AlertDescription className="mb-4">
+              Refresh the list or sign in again if your session expired.
+            </AlertDescription>
+            <Button variant="outline" size="sm" onClick={() => void boardsQuery.refetch()}>
+              <RefreshCcw className="h-4 w-4" />
+              Retry
+            </Button>
+          </Alert>
+        )}
+
+        {!boardsQuery.isLoading && !boardsQuery.isError && boardsQuery.data?.length === 0 && (
+          <section className="interactive-card motion-enter p-8 text-center">
+            <h2 className="text-lg font-semibold">No boards yet</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Create your first board to start organizing cards.
+            </p>
+            <Button className="mt-5" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4" />
+              New board
+            </Button>
+          </section>
+        )}
+
+        {!!boardsQuery.data?.length && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {boardsQuery.data.map((board, index) => (
+              <article
+                key={board.id}
+                className="interactive-card motion-enter group p-5"
+                style={{ animationDelay: `${index * 55}ms` }}
+              >
+                <Link
+                  to={`/boards/${board.id}`}
+                  className="block text-lg font-semibold transition-colors group-hover:text-accent"
+                >
+                  {board.title}
+                </Link>
+                <p className="mt-1 text-sm text-muted-foreground">{board._count.columns} columns</p>
+                <div className="mt-5 flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setRenameBoard(board)}>
+                    Rename
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() => setDeleteBoardTarget(board)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
 
       <BoardFormDialog
         open={createOpen}
