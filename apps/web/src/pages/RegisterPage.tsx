@@ -46,7 +46,7 @@ export function RegisterPage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-10">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-8 sm:py-10">
       <section className="rounded-lg border bg-card p-6 shadow-sm">
         <div className="space-y-1">
           <p className="text-sm font-medium text-accent">DevBoard</p>

@@ -113,7 +113,7 @@ function SortableCard({
       <div
         ref={setNodeRef}
         style={style}
-        className="h-16 rounded-lg border-2 border-dashed border-ring/50 bg-muted/30"
+        className="min-h-16 rounded-lg border-2 border-dashed border-ring/50 bg-muted/30"
       />
     );
   }
@@ -173,7 +173,7 @@ function DroppableColumn({ column, children }: { column: Column; children: React
   return (
     <section
       ref={setNodeRef}
-      className={`flex min-h-72 flex-col rounded-lg border bg-muted/70 p-3 transition-colors ${isOver ? 'border-accent bg-accent/10' : ''}`}
+      className={`flex w-72 min-w-72 shrink-0 flex-col rounded-lg border bg-muted/70 p-3 transition-colors ${isOver ? 'border-accent bg-accent/10' : ''}`}
     >
       {children}
     </section>
@@ -516,9 +516,10 @@ export function BoardPage() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+    <main className="px-4 py-8 sm:px-6">
+      <div className="mx-auto mb-6 max-w-7xl">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
           <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2">
             <Link to="/">
               <ArrowLeft className="h-4 w-4" />
@@ -530,10 +531,11 @@ export function BoardPage() {
             Drag cards between columns. Changes are saved to this board.
           </p>
         </div>
-        <Button onClick={() => setCreateColumnOpen(true)}>
-          <Plus className="h-4 w-4" />
-          New column
-        </Button>
+          <Button onClick={() => setCreateColumnOpen(true)}>
+            <Plus className="h-4 w-4" />
+            New column
+          </Button>
+        </div>
       </div>
 
       {boardQuery.data.columns.length === 0 ? (
@@ -552,7 +554,7 @@ export function BoardPage() {
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
+          <div className="flex gap-4 overflow-x-auto pb-4 [-webkit-overflow-scrolling:touch]">
             {boardQuery.data.columns.map((column) => (
               <DroppableColumn key={column.id} column={column}>
                 <div className="mb-3 flex items-center justify-between gap-3">
