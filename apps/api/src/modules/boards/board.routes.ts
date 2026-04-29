@@ -1,75 +1,53 @@
 import { Router } from 'express';
-import { ok, fail } from '../../lib/http.js';
-import { prisma } from '../../lib/prisma.js';
+import { ok } from '../../lib/http.js';
 import { createBoardSchema, updateBoardSchema } from './board.schemas.js';
+import * as boardService from './board.service.js';
 
 export const boardRouter = Router();
 
-boardRouter.get('/', async (req, res) => {
-  const boards = await prisma.board.findMany({
-    where: { ownerId: req.user!.sub },
-    orderBy: { updatedAt: 'desc' },
-    select: {
-      id: true,
-      title: true,
-      updatedAt: true,
-      _count: { select: { columns: true } },
-    },
-  });
-  return ok(res, boards);
+boardRouter.get('/', async (req, res, next) => {
+  try {
+    const result = await boardService.listBoards(req.user!.sub);
+    return ok(res, result);
+  } catch (err) {
+    next(err);
+  }
 });
 
-boardRouter.post('/', async (req, res) => {
-  const body = createBoardSchema.parse(req.body);
-  const board = await prisma.board.create({
-    data: {
-      title: body.title,
-      ownerId: req.user!.sub,
-      columns: {
-        create: [
-          { title: 'Todo', order: 0 },
-          { title: 'In Progress', order: 1 },
-          { title: 'Done', order: 2 },
-        ],
-      },
-    },
-  });
-  return ok(res, board, 201);
+boardRouter.post('/', async (req, res, next) => {
+  try {
+    const body = createBoardSchema.parse(req.body);
+    const result = await boardService.createBoard(req.user!.sub, body.title);
+    return ok(res, result, 201);
+  } catch (err) {
+    next(err);
+  }
 });
 
-boardRouter.get('/:boardId', async (req, res) => {
-  const board = await prisma.board.findFirst({
-    where: { id: req.params.boardId, ownerId: req.user!.sub },
-    include: {
-      columns: {
-        orderBy: { order: 'asc' },
-        include: { cards: { orderBy: { order: 'asc' } } },
-      },
-    },
-  });
-  if (!board) return fail(res, 404, 'Board not found');
-  return ok(res, board);
+boardRouter.get('/:boardId', async (req, res, next) => {
+  try {
+    const result = await boardService.getBoard(req.user!.sub, req.params.boardId);
+    return ok(res, result);
+  } catch (err) {
+    next(err);
+  }
 });
 
-boardRouter.patch('/:boardId', async (req, res) => {
-  const body = updateBoardSchema.parse(req.body);
-  const board = await prisma.board.findFirst({
-    where: { id: req.params.boardId, ownerId: req.user!.sub },
-    select: { id: true },
-  });
-  if (!board) return fail(res, 404, 'Board not found');
-
-  const updated = await prisma.board.update({ where: { id: board.id }, data: { title: body.title } });
-  return ok(res, updated);
+boardRouter.patch('/:boardId', async (req, res, next) => {
+  try {
+    const body = updateBoardSchema.parse(req.body);
+    const result = await boardService.updateBoard(req.user!.sub, req.params.boardId, body.title);
+    return ok(res, result);
+  } catch (err) {
+    next(err);
+  }
 });
 
-boardRouter.delete('/:boardId', async (req, res) => {
-  const board = await prisma.board.findFirst({
-    where: { id: req.params.boardId, ownerId: req.user!.sub },
-    select: { id: true },
-  });
-  if (!board) return fail(res, 404, 'Board not found');
-
-  await prisma.board.delete({ where: { id: board.id } });
-  return ok(res, { id: board.id });
+boardRouter.delete('/:boardId', async (req, res, next) => {
+  try {
+    const result = await boardService.deleteBoard(req.user!.sub, req.params.boardId);
+    return ok(res, result);
+  } catch (err) {
+    next(err);
+  }
 });

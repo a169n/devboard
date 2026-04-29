@@ -16,6 +16,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       tokenStorage.clear();
+      window.dispatchEvent(new Event('devboard:auth-expired'));
     }
     return Promise.reject(error);
   },

@@ -1,13 +1,13 @@
 # DevBoard
 
-DevBoard is a narrow MVP Kanban app: multi-user auth, private boards, columns/cards CRUD, and drag-and-drop card movement with PostgreSQL persistence.
+DevBoard is a narrow MVP Kanban app: multi-user auth, private boards, columns/cards CRUD, card priority editing, and drag-and-drop card movement with PostgreSQL persistence. It is intentionally not a Jira clone.
 
 ## Tech Stack
-- Frontend: React + Vite + TypeScript + Tailwind
+- Frontend: React + Vite + TypeScript + Tailwind + dnd-kit
 - Backend: Express + TypeScript + Prisma
 - DB: PostgreSQL
 - Auth: JWT + bcrypt
-- DnD: dnd-kit
+- API docs: OpenAPI + Swagger UI
 
 ## Repository Structure
 - `apps/api` - backend API and Prisma schema
@@ -28,6 +28,8 @@ cp .env.example .env
 
 Set a strong `JWT_SECRET` in `.env`.
 
+The included Docker Compose file exposes Postgres on host port `5433`, matching `.env.example`.
+
 ### 3) Start database
 ```bash
 npm run db:up
@@ -46,6 +48,8 @@ npm run dev
 
 - API: `http://localhost:4000`
 - Web: `http://localhost:5173`
+- Swagger UI: `http://localhost:4000/docs`
+- OpenAPI JSON: `http://localhost:4000/openapi.json`
 
 ## Default seed user
 - Email: `demo@devboard.local`
@@ -54,6 +58,9 @@ npm run dev
 ## Useful Commands
 ```bash
 npm run lint
+npm run lint:fix
+npm run format:check
+npm run format
 npm run build
 npm run db:down
 npm run db:generate
@@ -69,6 +76,10 @@ npm run db:generate
 - `POST /api/cards/move`
 
 All non-auth routes require `Authorization: Bearer <token>`.
+
+API responses use a consistent envelope:
+- Success: `{ "success": true, "data": ... }`
+- Error: `{ "success": false, "error": { "code": "...", "message": "...", "details": ... } }`
 
 ## Documentation
 See:

@@ -11,6 +11,7 @@ import { httpLogger } from './middleware/logger.js';
 import { globalLimiter, authLimiter } from './middleware/rateLimit.js';
 import { ok } from './lib/http.js';
 import { prisma } from './lib/prisma.js';
+import { openApiDocument, swaggerUiHandlers, swaggerUiSetup } from './docs/openapi.js';
 
 export const app = express();
 
@@ -18,6 +19,9 @@ app.use(httpLogger);
 app.use(cors({ origin: env.CORS_ORIGIN }));
 app.use(globalLimiter);
 app.use(express.json());
+
+app.get('/openapi.json', (_req, res) => res.json(openApiDocument));
+app.use('/docs', swaggerUiHandlers, swaggerUiSetup);
 
 app.get('/health', async (_req, res, next) => {
   try {

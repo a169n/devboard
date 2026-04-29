@@ -1,6 +1,9 @@
 import type { InputHTMLAttributes } from 'react';
 
-export function Field({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+export function Field({
+  label,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return (
     <label className="flex flex-col gap-1 text-sm text-slate-700">
       {label}

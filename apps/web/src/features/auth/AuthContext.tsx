@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { login as loginApi, me, register as registerApi } from './auth';
@@ -29,6 +30,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((u) => setUser(u))
       .catch(() => tokenStorage.clear())
       .finally(() => setIsReady(true));
+  }, []);
+
+  useEffect(() => {
+    const handleExpiredSession = () => setUser(null);
+    window.addEventListener('devboard:auth-expired', handleExpiredSession);
+    return () => window.removeEventListener('devboard:auth-expired', handleExpiredSession);
   }, []);
 
   const value = useMemo(

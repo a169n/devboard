@@ -5,7 +5,7 @@ import { fail } from '../lib/http.js';
 import { logger } from './logger.js';
 
 export function notFound(_req: Request, res: Response) {
-  return fail(res, 404, 'Route not found');
+  return fail(res, 404, 'Route not found', { code: 'ROUTE_NOT_FOUND' });
 }
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {

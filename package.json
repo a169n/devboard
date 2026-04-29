@@ -9,6 +9,7 @@
     "dev": "concurrently \"npm run dev -w @devboard/api\" \"npm run dev -w @devboard/web\"",
     "build": "npm run build -w @devboard/api && npm run build -w @devboard/web",
     "lint": "npm run lint -w @devboard/api && npm run lint -w @devboard/web",
+    "lint:fix": "npm run lint:fix -w @devboard/api && npm run lint:fix -w @devboard/web",
     "format": "npm run format -w @devboard/api && npm run format -w @devboard/web",
     "format:check": "npm run format:check -w @devboard/api && npm run format:check -w @devboard/web",
     "db:up": "docker compose up -d postgres",

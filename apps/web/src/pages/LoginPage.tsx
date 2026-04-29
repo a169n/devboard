@@ -1,46 +1,102 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Field } from '../components/Field';
+import { useForm } from 'react-hook-form';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { getApiErrorMessage } from '@/lib/apiError';
 import { useAuth } from '../features/auth/AuthContext';
 
+const loginSchema = z.object({
+  email: z.string().email('Enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+type LoginValues = z.infer<typeof loginSchema>;
+
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  if (user) return <Navigate to="/" replace />;
+
+  const onSubmit = async (values: LoginValues) => {
+    setError('');
+    try {
+      await login(values.email, values.password);
+      navigate('/', { replace: true });
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Login failed. Check your email and password.'));
+    }
+  };
 
   return (
-    <main className="mx-auto mt-20 max-w-md rounded-xl bg-white p-6 shadow">
-      <h1 className="text-2xl font-semibold">Login to DevBoard</h1>
-      <p className="mt-1 text-sm text-slate-600">Use your credentials to continue.</p>
-      <form
-        className="mt-5 space-y-3"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setError('');
-          try {
-            await login(email, password);
-            navigate('/');
-          } catch {
-            setError('Login failed');
-          }
-        }}
-      >
-        <Field label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-        <Field
-          label="Password"
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <button className="w-full rounded-md bg-slate-900 py-2 text-white">Login</button>
-      </form>
-      <p className="mt-4 text-sm text-slate-600">
-        New here? <Link className="text-slate-900 underline" to="/register">Create account</Link>
-      </p>
+    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-10">
+      <section className="rounded-lg border bg-card p-6 shadow-sm">
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-accent">DevBoard</p>
+          <h1 className="text-2xl font-semibold">Login</h1>
+          <p className="text-sm text-muted-foreground">
+            Use your account to continue to your boards.
+          </p>
+        </div>
+
+        <Form {...form}>
+          <form className="mt-6 space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" autoComplete="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" autoComplete="current-password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+            <Button className="w-full" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? 'Logging in...' : 'Login'}
+            </Button>
+          </form>
+        </Form>
+
+        <p className="mt-5 text-sm text-muted-foreground">
+          New here?{' '}
+          <Link className="font-medium text-foreground underline underline-offset-4" to="/register">
+            Create account
+          </Link>
+        </p>
+      </section>
     </main>
   );
 }

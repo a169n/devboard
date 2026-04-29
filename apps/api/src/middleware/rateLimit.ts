@@ -1,11 +1,19 @@
 import rateLimit from 'express-rate-limit';
 
+const rateLimitMessage = {
+  success: false,
+  error: {
+    code: 'RATE_LIMITED',
+    message: 'Too many requests, please try again later.',
+  },
+};
+
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   limit: 200,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many requests, please try again later.' } },
+  message: rateLimitMessage,
 });
 
 export const authLimiter = rateLimit({
@@ -13,5 +21,5 @@ export const authLimiter = rateLimit({
   limit: 10,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many requests, please try again later.' } },
+  message: rateLimitMessage,
 });

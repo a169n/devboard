@@ -24,7 +24,12 @@ async function main() {
                 order: 0,
                 cards: {
                   create: [
-                    { title: 'Set up project', description: 'Initialize repo', order: 0, priority: 'HIGH' },
+                    {
+                      title: 'Set up project',
+                      description: 'Initialize repo',
+                      order: 0,
+                      priority: 'HIGH',
+                    },
                   ],
                 },
               },

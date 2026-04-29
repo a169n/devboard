@@ -1,73 +1,35 @@
 import { Router } from 'express';
-import { ok, fail } from '../../lib/http.js';
-import { prisma } from '../../lib/prisma.js';
+import { ok } from '../../lib/http.js';
 import { createColumnSchema, updateColumnSchema } from './column.schemas.js';
+import * as columnService from './column.service.js';
 
 export const columnRouter = Router();
 
-async function rewriteColumnOrder(tx: typeof prisma, boardId: string, columnIds: string[]) {
-  for (const [idx, id] of columnIds.entries()) {
-    await tx.column.update({ where: { id }, data: { order: idx + 1000 } });
+columnRouter.post('/', async (req, res, next) => {
+  try {
+    const body = createColumnSchema.parse(req.body);
+    const result = await columnService.createColumn(req.user!.sub, body.boardId, body.title);
+    return ok(res, result, 201);
+  } catch (err) {
+    next(err);
   }
-  for (const [idx, id] of columnIds.entries()) {
-    await tx.column.update({ where: { id }, data: { order: idx, boardId } });
-  }
-}
-
-columnRouter.post('/', async (req, res) => {
-  const body = createColumnSchema.parse(req.body);
-  const board = await prisma.board.findFirst({
-    where: { id: body.boardId, ownerId: req.user!.sub },
-    select: { id: true },
-  });
-  if (!board) return fail(res, 404, 'Board not found');
-
-  const maxOrder = await prisma.column.aggregate({
-    where: { boardId: board.id },
-    _max: { order: true },
-  });
-
-  const column = await prisma.column.create({
-    data: { boardId: board.id, title: body.title, order: (maxOrder._max.order ?? -1) + 1 },
-  });
-
-  return ok(res, column, 201);
 });
 
-columnRouter.patch('/:columnId', async (req, res) => {
-  const body = updateColumnSchema.parse(req.body);
-  const column = await prisma.column.findFirst({
-    where: {
-      id: req.params.columnId,
-      board: { ownerId: req.user!.sub },
-    },
-    select: { id: true },
-  });
-  if (!column) return fail(res, 404, 'Column not found');
-
-  const updated = await prisma.column.update({ where: { id: column.id }, data: { title: body.title } });
-  return ok(res, updated);
+columnRouter.patch('/:columnId', async (req, res, next) => {
+  try {
+    const body = updateColumnSchema.parse(req.body);
+    const result = await columnService.updateColumn(req.user!.sub, req.params.columnId, body.title);
+    return ok(res, result);
+  } catch (err) {
+    next(err);
+  }
 });
 
-columnRouter.delete('/:columnId', async (req, res) => {
-  const column = await prisma.column.findFirst({
-    where: {
-      id: req.params.columnId,
-      board: { ownerId: req.user!.sub },
-    },
-    select: { id: true, boardId: true },
-  });
-  if (!column) return fail(res, 404, 'Column not found');
-
-  await prisma.$transaction(async (tx) => {
-    await tx.column.delete({ where: { id: column.id } });
-    const remaining = await tx.column.findMany({
-      where: { boardId: column.boardId },
-      orderBy: { order: 'asc' },
-      select: { id: true },
-    });
-    await rewriteColumnOrder(tx as typeof prisma, column.boardId, remaining.map((item) => item.id));
-  });
-
-  return ok(res, { id: column.id });
+columnRouter.delete('/:columnId', async (req, res, next) => {
+  try {
+    const result = await columnService.deleteColumn(req.user!.sub, req.params.columnId);
+    return ok(res, result);
+  } catch (err) {
+    next(err);
+  }
 });
