@@ -173,7 +173,7 @@ function DroppableColumn({ column, children }: { column: Column; children: React
   return (
     <section
       ref={setNodeRef}
-      className={`flex w-72 min-w-72 shrink-0 flex-col rounded-lg border bg-muted/70 p-3 transition-colors ${isOver ? 'border-accent bg-accent/10' : ''}`}
+      className={`flex h-full w-72 min-w-72 shrink-0 flex-col rounded-lg border bg-muted/70 p-3 transition-colors ${isOver ? 'border-accent bg-accent/10' : ''}`}
     >
       {children}
     </section>
@@ -516,8 +516,8 @@ export function BoardPage() {
   }
 
   return (
-    <main className="px-4 py-8 sm:px-6">
-      <div className="mx-auto mb-6 max-w-7xl">
+    <main className="flex h-[calc(100vh-4rem)] flex-col overflow-hidden px-4 pt-8 sm:px-6">
+      <div className="mx-auto mb-4 w-full max-w-7xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
           <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2">
@@ -539,7 +539,7 @@ export function BoardPage() {
       </div>
 
       {boardQuery.data.columns.length === 0 ? (
-        <section className="rounded-lg border bg-card p-8 text-center">
+        <section className="mx-auto w-full max-w-7xl rounded-lg border bg-card p-8 text-center">
           <h2 className="text-lg font-semibold">No columns yet</h2>
           <p className="mt-1 text-sm text-muted-foreground">Add a column to start placing cards.</p>
           <Button className="mt-5" onClick={() => setCreateColumnOpen(true)}>
@@ -548,13 +548,14 @@ export function BoardPage() {
           </Button>
         </section>
       ) : (
+        <div className="min-h-0 flex-1">
         <DndContext
           sensors={sensors}
           collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <div className="flex gap-4 overflow-x-auto pb-4 [-webkit-overflow-scrolling:touch]">
+          <div className="flex h-full gap-4 overflow-x-auto pb-4 [-webkit-overflow-scrolling:touch]">
             {boardQuery.data.columns.map((column) => (
               <DroppableColumn key={column.id} column={column}>
                 <div className="mb-3 flex items-center justify-between gap-3">
@@ -581,7 +582,7 @@ export function BoardPage() {
                   items={column.cards.map((card) => card.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="flex flex-1 flex-col gap-2">
+                  <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-0.5">
                     {column.cards.length === 0 && (
                       <div className="flex min-h-28 items-center justify-center rounded-md border border-dashed bg-background/70 p-4 text-center text-sm text-muted-foreground">
                         Drop cards here or add a new one.
@@ -634,6 +635,7 @@ export function BoardPage() {
             ) : null}
           </DragOverlay>
         </DndContext>
+        </div>
       )}
 
       <ColumnFormDialog
