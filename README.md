@@ -9,6 +9,11 @@ DevBoard is a narrow MVP Kanban app: multi-user auth, private boards, columns/ca
 - Auth: JWT + bcrypt
 - API docs: OpenAPI + Swagger UI
 
+## Live Deployment
+- Client: https://devboard-web-9b49.onrender.com
+- Swagger UI: https://devboard-lhtz.onrender.com/docs/
+- Database: PostgreSQL hosted on Render
+
 ## Repository Structure
 - `apps/api` - backend API and Prisma schema
 - `apps/web` - frontend app
@@ -75,6 +80,18 @@ npm run build
 npm run db:down
 npm run db:generate
 ```
+
+## Render Deployment
+The web app uses React Router, so deep links such as `/boards/:boardId` must be
+served by `index.html` and handled client-side. The included `render.yaml`
+configures the static web service with this rewrite:
+
+- Source: `/*`
+- Destination: `/index.html`
+- Action: `Rewrite`
+
+If the existing Render service was created manually instead of from the
+Blueprint, add the same rule in the service's Redirects/Rewrites settings.
 
 ## Final Submission Materials
 See:

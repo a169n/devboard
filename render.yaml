@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: devboard-web-9b49
+    runtime: static
+    buildCommand: npm ci && npm run build -w @devboard/web
+    staticPublishPath: apps/web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

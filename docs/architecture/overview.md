@@ -8,6 +8,11 @@ DevBoard is a modular monolith with a React frontend and an Express REST backend
 - Card reorder/move with transactional persistence.
 - React UI for auth, dashboard, and board workflows.
 
+## Deployment
+- Client: https://devboard-web-9b49.onrender.com
+- Swagger UI: https://devboard-lhtz.onrender.com/docs/
+- Database: PostgreSQL hosted on Render
+
 ## Why this architecture
 - Keeps MVP narrow and easy for student teams.
 - Clear separation between UI, API, and data layer.

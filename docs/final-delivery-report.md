@@ -66,6 +66,5 @@ Out of 24 carried-forward requirements, 20 are fully implemented, 4 are partiall
 | Component / Decision | Original Design | Final Implementation |
 | --- | --- | --- |
 | Authentication token model | Earlier component text mentioned JWT access control with refresh tokens. | The final implementation uses a single 7-day JWT bearer token. This kept the backend stateless and simpler for the MVP, but token revocation remains coarse-grained. |
-| Deployment evidence | Earlier planning expected free-tier hosting such as Vercel or Render. | The project is currently documented as locally runnable with Docker Compose PostgreSQL, API, and web workspaces. Final submission should add either a deployed link or local-run proof. |
+| Deployment evidence | Earlier planning expected free-tier hosting such as Vercel or Render. | The final project is deployed on Render: client at https://devboard-web-9b49.onrender.com, Swagger UI/API docs at https://devboard-lhtz.onrender.com/docs/, and PostgreSQL hosted on Render. |
 | Testing strategy | Earlier requirements mentioned regression, invalid-input, access-control, and performance tests. | The final project relies on manual acceptance testing plus build/lint checks. This is acceptable for the demo but remains engineering debt. |
-
