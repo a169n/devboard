@@ -1,6 +1,7 @@
-import { CardPriority, type Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { badRequest, notFound } from '../../lib/errors.js';
 import { prisma } from '../../lib/prisma.js';
+import type { CardPriority } from './card.schemas.js';
 
 async function rewriteCardOrder(tx: Prisma.TransactionClient, columnId: string, cardIds: string[]) {
   for (const [idx, id] of cardIds.entries()) {
@@ -55,7 +56,7 @@ export async function createCard(
       columnId: column.id,
       title: data.title,
       description: data.description,
-      priority: data.priority ?? CardPriority.MEDIUM,
+      priority: data.priority ?? 'MEDIUM',
       order: (maxOrder._max.order ?? -1) + 1,
     },
   });
