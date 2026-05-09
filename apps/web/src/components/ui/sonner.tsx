@@ -6,12 +6,16 @@ export function Toaster() {
   return (
     <Sonner
       theme={resolvedTheme}
-      richColors
       closeButton
-      position="top-right"
+      position="top-center"
+      offset={16}
+      gap={8}
       toastOptions={{
         classNames: {
           toast: 'font-sans',
+          title: '!font-semibold !text-sm',
+          description: '!text-xs !text-muted-foreground',
+          closeButton: '!border-border !text-muted-foreground hover:!text-foreground',
         },
       }}
     />

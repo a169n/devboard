@@ -199,17 +199,19 @@ export function DashboardPage() {
             {boardsQuery.data.map((board, index) => (
               <article
                 key={board.id}
-                className="interactive-card motion-enter group p-5"
+                className="interactive-card motion-enter group relative p-5"
                 style={{ animationDelay: `${index * 55}ms` }}
               >
                 <Link
                   to={`/boards/${board.id}`}
-                  className="block text-lg font-semibold transition-colors group-hover:text-accent"
-                >
+                  className="absolute inset-0 rounded-lg"
+                  aria-label={board.title}
+                />
+                <p className="block text-lg font-semibold transition-colors group-hover:text-accent">
                   {board.title}
-                </Link>
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">{board._count.columns} columns</p>
-                <div className="mt-5 flex gap-2">
+                <div className="relative z-10 mt-5 flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => setRenameBoard(board)}>
                     Rename
                   </Button>
